@@ -1,0 +1,68 @@
+html {
+  --mainBG: #FEFFFE;
+  --mainText: #292F36;
+  --card: #EFF1F3;
+  --hover: #BFB5AF;
+  --secondaryText: #823329;
+  --mainFont: 'Josefin Sans', sans-serif;
+  --titleFont: 'Anton', sans-serif
+}
+
+.butn {
+  background-color: var(--card);
+  color: var(--mainText);
+  border-radius: 10px;
+  margin: 2em;
+}
+
+.btn:hover {
+  background-color: var(--hover);
+}
+
+body {
+  background-color: var(--mainBG) !important;
+  color: var(--mainText) !important;
+  font-family: var(--mainFont) !important;
+}
+
+.card {
+  border-radius: 15px !important;
+  background-color: var(--card) !important;
+  color: var(--mainText) !important;
+  margin: 2em;
+  border-color: var(--hover) !important;
+  transition: transform .2s;
+  border-width: 2px !important;
+}
+
+.card p {
+  padding-right: 1.5em;
+  font-style: italic;
+  color: var(--secondaryText) !important;
+}
+
+.card h1 {
+  font-size: 2em;
+  font-family: var(--titleFont);
+  letter-spacing: 0.05em;
+  color: var(--secondaryText) !important;
+  text-align: center;
+}
+
+.title {
+  font-family: var(--titleFont);
+  letter-spacing: 0.05em;
+  text-align: center;
+  color: var(--mainText) !important;
+  margin-bottom: 1em;
+}
+
+.card:hover {
+  background-color: var(--hover) !important;
+  cursor: pointer;
+  transform: scale(1.05);
+}
+
+.image {
+  padding-top: 25px;
+}
