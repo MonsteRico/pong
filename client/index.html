@@ -1,59 +1,184 @@
-<canvas id="ctx" width="500" height="500" style="border:1px solid #000"></canvas>
-<script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
-<script>
-  var ctx = document.getElementById("ctx").getContext("2d");
-  var socket = io();
-  ctx.font = '30px Arial';
-  socket.on('newPositions', function(data) {
-    ctx.clearRect(0, 0, 500, 500);
-    for (var i = 0; i < data.length; i++) {
-      ctx.fillText(data[i].number, data[i].x, data[i].y);
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>PONG</title>
+  <style>
+    ul {
+      list-style-type: none;
     }
-  });
 
-  document.onkeydown = function(event) {
-    if (event.keyCode === 68) //d
-      socket.emit('keyPress', {
-        inputId: 'right',
-        state: true
-      });
-    else if (event.keyCode == 83) //s
-      socket.emit('keyPress', {
-        inputId: 'down',
-        state: true
-      });
-    else if (event.keyCode == 65) //a
-      socket.emit('keyPress', {
-        inputId: 'left',
-        state: true
-      });
-    else if (event.keyCode == 87) //w
-      socket.emit('keyPress', {
-        inputId: 'up',
-        state: true
-      });
-  }
+    li {
+      width: 300px;
+      text-align: center;
+      height: 50px;
+      padding-top: 5px;
+      font-family: "Comic Sans MS";
+      font-size: 32px;
+    }
 
-  document.onkeyup = function(event) {
-    if (event.keyCode === 68) //d
-      socket.emit('keyPress', {
-        inputId: 'right',
-        state: false
+    #unready {
+      color: red;
+    }
+
+    #ready {
+      color: green;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="prepDiv">
+    <ul id="playerList">
+    </ul>
+    <label>Choose your color!</label>
+    <input id="color" type="color" \>
+    <input type="text" id="name" placeholder="Type your name here!" \>
+    <button onclick="updatePlayer()">Change!<button>
+        <label>Ready Up</label><input onchange="readyUp();" type="checkbox" id="readyBox" \>
+  </div>
+
+  <div id="gameDiv">
+    <canvas id="ctx" width="700" height="700" style="border:1px solid #000"></canvas>
+    <h1>WARNING: DONT LEAVE IN THE MIDDLE OF THE GAME IT WILL PROBABLY BREAK AND IM TOO LAZY TO FIX IT!</h1>
+  </div>
+
+  <script src="https://cdn.socket.io/socket.io-1.4.5.js"></script>
+  <script>
+    var ctx = document.getElementById("ctx").getContext("2d");
+    var canvas = document.getElementById("ctx");
+    var width = canvas.width;
+    var height = canvas.height;
+    var gameDiv = document.getElementById("gameDiv");
+    var prepDiv = document.getElementById("prepDiv");
+    var socket = io();
+    var debug = true;
+
+    socket.on('update', function(data) {
+      var gameState = data.state;
+      var playerList = data.playerList;
+      if (gameState == "prep") {
+        gameDiv.style.display = "none";
+        prepDiv.style.display = "inline-block";
+        var ul = document.getElementById("playerList");
+        while ((ul.getElementsByTagName("li")).length > 0) {
+          var lis = ul.getElementsByTagName("li");
+          ul.removeChild(lis[0]);
+        }
+        for (var i in playerList) {
+          var li = document.createElement("li");
+          li.appendChild(document.createTextNode(playerList[i].name));
+          ul.appendChild(li);
+          li.style.backgroundColor = playerList[i].color;
+          li.setAttribute("id", playerList[i].ready);
+        }
+      } else if (gameState == "play") {
+        prepDiv.style.display = "none";
+        gameDiv.style.display = "inline-block";
+        ctx.clearRect(0, 0, width, height);
+        for (i in data.paddleArray) {
+          drawPaddle(data.paddleArray[i]);
+        }
+        ctx.fillStyle = data.ball.color;
+        ctx.beginPath();
+        ctx.arc(data.ball.x, data.ball.y, data.ball.radius, 0, 360);
+        ctx.fill();
+      }
+
+
+      if (debug) {
+        console.log(data);
+        debug = false;
+      }
+    });
+
+    socket.on('badName', function() {
+      alert("Bad Name");
+    })
+
+    function updatePlayer() {
+      var name = document.getElementById("name").value;
+      var color = document.getElementById("color").value;
+      socket.emit("updatePlayer", {
+        name: name,
+        color: color
       });
-    else if (event.keyCode == 83) //s
-      socket.emit('keyPress', {
-        inputId: 'down',
-        state: false
-      });
-    else if (event.keyCode == 65) //a
-      socket.emit('keyPress', {
-        inputId: 'left',
-        state: false
-      });
-    else if (event.keyCode == 87) //w
-      socket.emit('keyPress', {
-        inputId: 'up',
-        state: false
-      });
-  }
-</script>
+    }
+
+    function readyUp() {
+      var ready = "unready";
+      if (document.getElementById("readyBox").checked) {
+        ready = "ready";
+      } else {
+        ready = "unready";
+      }
+      socket.emit("readyUp", ready);
+    }
+
+    function drawBall(ball) {
+      ctx.fillStyle = ball.color;
+      ctx.beginPath();
+      ctx.arc(ball.x, ball.y, ball.radius, 0, 360);
+      ctx.fill();
+    }
+
+    function drawPaddle(paddle) {
+      ctx.fill();
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = paddle.color;
+      ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
+      if (this.displayScore) {
+        ctx.font = "200px Arial";
+        ctx.fillStyle = paddle.color;
+        ctx.fillText(paddle.score, width / 2, height / 2);
+      }
+    }
+    document.onkeydown = function(event) {
+      if (event.keyCode === 68) //d
+        socket.emit('keyPress', {
+          inputId: 'right',
+          state: true
+        });
+      else if (event.keyCode == 83) //s
+        socket.emit('keyPress', {
+          inputId: 'down',
+          state: true
+        });
+      else if (event.keyCode == 65) //a
+        socket.emit('keyPress', {
+          inputId: 'left',
+          state: true
+        });
+      else if (event.keyCode == 87) //w
+        socket.emit('keyPress', {
+          inputId: 'up',
+          state: true
+        });
+    }
+
+    document.onkeyup = function(event) {
+      if (event.keyCode === 68) //d
+        socket.emit('keyPress', {
+          inputId: 'right',
+          state: false
+        });
+      else if (event.keyCode == 83) //s
+        socket.emit('keyPress', {
+          inputId: 'down',
+          state: false
+        });
+      else if (event.keyCode == 65) //a
+        socket.emit('keyPress', {
+          inputId: 'left',
+          state: false
+        });
+      else if (event.keyCode == 87) //w
+        socket.emit('keyPress', {
+          inputId: 'up',
+          state: false
+        });
+    }
+  </script>
+</body>
+
+</html>
