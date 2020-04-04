@@ -97,12 +97,16 @@
     })
 
     function updatePlayer() {
-      var name = document.getElementById("name").value;
-      var color = document.getElementById("color").value;
-      socket.emit("updatePlayer", {
-        name: name,
-        color: color
-      });
+      if (document.getElementById("readyBox").checked) {
+        alert("Please unready before changing your settings!");
+      } else {
+        var name = document.getElementById("name").value;
+        var color = document.getElementById("color").value;
+        socket.emit("updatePlayer", {
+          name: name,
+          color: color
+        });
+      }
     }
 
     function readyUp() {
