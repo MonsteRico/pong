@@ -131,7 +131,7 @@
       ctx.globalAlpha = 1;
       ctx.fillStyle = paddle.color;
       ctx.fillRect(paddle.x, paddle.y, paddle.width, paddle.height);
-      if (this.displayScore) {
+      if (paddle.displayScore) {
         ctx.font = "200px Arial";
         ctx.fillStyle = paddle.color;
         ctx.fillText(paddle.score, width / 2, height / 2);
