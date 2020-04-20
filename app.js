@@ -17,6 +17,10 @@ var Paddle = function(x, y, vel, width, height, direction, color) {
     }
   }
   self.displayScore = false;
+  self.pressingUp = false;
+  self.pressingDown = false;
+  self.pressingLeft = false;
+  self.pressingRight = false;
   self.move = function(posOrNeg) {
     //console.log(posOrNeg);
     var multiplier = 0;
@@ -164,28 +168,15 @@ io.sockets.on('connection', function(socket) {
     if (gameState == "play") {
       for (var i in readyList) {
         if (socket.id == readyList[i].id) {
-          if (readyList[i].paddle.direction == "LR") {
-            if (data.inputId == "left") {
-              if (data.state) {
-                readyList[i].paddle.move("pos");
-              }
-            } else if (data.inputId == "right") {
-              if (data.state) {
-                readyList[i].paddle.move("neg");
-              }
-            }
-          }
-          if (readyList[i].paddle.direction == "UD") {
-            if (data.inputId == "up") {
-              if (data.state) {
-                readyList[i].paddle.move("pos");
-              }
-            } else if (data.inputId == "down") {
-              if (data.state) {
-                readyList[i].paddle.move("neg");
-              }
-            }
-          }
+          var paddle = readyList[i].paddle;
+          if (data.inputId == "left")
+            paddle.pressingLeft = data.state;
+          if (data.inputId == "down")
+            paddle.pressingDown = data.state;
+          if (data.inputId == "up")
+            paddle.pressingUp = data.state;
+          if (data.inputId == "right")
+            paddle.pressingRight = data.state;
         }
       }
     }
@@ -214,6 +205,27 @@ setInterval(function() {
       paddleArray[2] = paddle3;
       paddleArray[3] = paddle4;
     }
+
+    for (var i in paddleArray) {
+      var dir = paddleArray[i].direction;
+      if (dir == "LR") {
+        if (paddleArray[i].pressingLeft) {
+          paddleArray[i].move("pos");
+        }
+        if (paddleArray[i].pressingRight) {
+          paddleArray[i].move("neg");
+        }
+      } else if (dir == "UD") {
+        if (paddleArray[i].pressingUp) {
+          paddleArray[i].move("pos");
+        }
+        if (paddleArray[i].pressingDown) {
+          paddleArray[i].move("neg");
+        }
+      }
+    }
+
+
     ball1.move();
     if (ball1.x > maxX - ball1.radius || ball1.x < minX) {
       for (var i = 0; i < paddleArray.length; i++) {
