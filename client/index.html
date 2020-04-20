@@ -53,6 +53,9 @@
     var prepDiv = document.getElementById("prepDiv");
     var socket = io();
     var debug = true;
+    var prevBallX = 0;
+    var prevBallY = 0;
+
 
     socket.on('update', function(data) {
       var gameState = data.state;
@@ -79,6 +82,12 @@
         for (i in data.paddleArray) {
           drawPaddle(data.paddleArray[i]);
         }
+        ctx.fillStyle = "white";
+        ctx.beginPath();
+        ctx.arc(prevBallX, prevBallY, data.ball.radius + 0.5, 0, 360);
+        ctx.fill();
+        prevBallX = data.ball.x;
+        prevBallY = data.ball.y;
         ctx.fillStyle = data.ball.color;
         ctx.beginPath();
         ctx.arc(data.ball.x, data.ball.y, data.ball.radius, 0, 360);
